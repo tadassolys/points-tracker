@@ -6,7 +6,12 @@ https://points-tracker-two.vercel.app/
 
 ## Getting Started
 
-First, run the development server:
+First, prepare project:
+
+npm install next
+npm install @headlessui/react
+
+then run the development server:
 
 ```bash
 npm run dev
