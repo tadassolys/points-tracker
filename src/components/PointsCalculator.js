@@ -271,7 +271,7 @@ const PointsCalculator = () => {
     setGameHistory(updatedGameHistory);
     localStorage.setItem("gameHistory", JSON.stringify(updatedGameHistory));
 
-    alert("Game saved successfully! ✅");
+  //  alert("Game saved successfully! ✅");
   };
 
   const incrementOptions = [1, 5, 10, 25, 50, 100];
@@ -417,6 +417,14 @@ const PointsCalculator = () => {
         ))}
       </div>
 
+      <button
+        onClick={saveGame}
+        className="w-full py-3 bg-blue-500 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-blue-600"
+      >
+        <Save size={20} />
+        Save Game
+      </button>
+
       <Card className="dark:bg-gray-800">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2 dark:text-white">
@@ -530,13 +538,7 @@ const PointsCalculator = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <button
-        onClick={saveGame}
-        className="w-full py-3 bg-blue-500 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-blue-600"
-      >
-        <Save size={20} />
-        Save Game
-      </button>
+      
     </div>
   );
 };
