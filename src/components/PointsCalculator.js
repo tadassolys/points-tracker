@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import KeepScreenOnButton from "./KeepScreenOnButton"; 
 import {
   Plus,
   Minus,
@@ -348,6 +349,9 @@ const PointsCalculator = () => {
           </button>
         ))}
       </div>
+
+      <KeepScreenOnButton />
+
 
       <div className="space-y-4">
         {players.map((player) => (
