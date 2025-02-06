@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import KeepScreenOnButton from "./KeepScreenOnButton"; 
+import ResetAndDeleteButton from './ResetAndDeleteButton'; 
+
 import {
   Plus,
   Minus,
@@ -100,6 +102,12 @@ const PointsCalculator = () => {
   const [isDeletePlayerDialogOpen, setIsDeletePlayerDialogOpen] =
     useState(false);
   const [playerToDelete, setPlayerToDelete] = useState(null);
+
+  const resetAndDeleteAll = () => {
+    setPlayers([]);
+    setGameHistory([]);
+    localStorage.clear(); // Clear local storage or any other data you need to reset
+  };
 
   const [players, setPlayers] = useState([
     {
@@ -350,8 +358,7 @@ const PointsCalculator = () => {
         ))}
       </div>
 
-      <KeepScreenOnButton />
-
+                <KeepScreenOnButton />
 
       <div className="space-y-4">
         {players.map((player) => (
@@ -441,6 +448,8 @@ const PointsCalculator = () => {
         <Save size={20} />
         Save Game
       </button>
+
+      <ResetAndDeleteButton onReset={resetAndDeleteAll} />
 
       <Card className="dark:bg-gray-800">
         <CardHeader>
