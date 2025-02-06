@@ -96,6 +96,10 @@ const PointsCalculator = () => {
   const [scoreInput, setScoreInput] = useState("");
   const [isDeleteHistoryDialogOpen, setIsDeleteHistoryDialogOpen] =
     useState(false);
+  const [isDeletePlayerDialogOpen, setIsDeletePlayerDialogOpen] =
+    useState(false);
+  const [playerToDelete, setPlayerToDelete] = useState(null);
+
   const [players, setPlayers] = useState([
     {
       id: 1,
@@ -185,8 +189,17 @@ const PointsCalculator = () => {
     );
   };
 
-  const removePlayer = (playerId) => {
-    setPlayers(players.filter((player) => player.id !== playerId));
+  const confirmRemovePlayer = (playerId) => {
+    setPlayerToDelete(playerId);
+    setIsDeletePlayerDialogOpen(true);
+  };
+
+  const handleRemovePlayer = () => {
+    if (playerToDelete !== null) {
+      setPlayers(players.filter((player) => player.id !== playerToDelete));
+      setIsDeletePlayerDialogOpen(false);
+      setPlayerToDelete(null);
+    }
   };
 
   const addNewPlayer = () => {
@@ -271,7 +284,7 @@ const PointsCalculator = () => {
     setGameHistory(updatedGameHistory);
     localStorage.setItem("gameHistory", JSON.stringify(updatedGameHistory));
 
-  //  alert("Game saved successfully! ✅");
+    //  alert("Game saved successfully! ✅");
   };
 
   const incrementOptions = [1, 5, 10, 25, 50, 100];
@@ -364,7 +377,7 @@ const PointsCalculator = () => {
                       </button>
                     </CardTitle>
                     <button
-                      onClick={() => removePlayer(player.id)}
+                      onClick={() => confirmRemovePlayer(player.id)}
                       className="p-1 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
                     >
                       <Trash2 size={16} />
@@ -493,7 +506,7 @@ const PointsCalculator = () => {
               onClick={() => {
                 setScoreInput("");
                 setSelectedPlayerId(null);
-                setIsScoreDialogOpen(false); 
+                setIsScoreDialogOpen(false);
               }}
             >
               Cancel
@@ -523,6 +536,7 @@ const PointsCalculator = () => {
               onClick={() => {
                 setScoreInput("");
                 setSelectedPlayerId(null);
+                setIsDeleteHistoryDialogOpen(false); // Close the dialog
               }}
             >
               Cancel
@@ -538,7 +552,34 @@ const PointsCalculator = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      
+      {/* Delete player Confirmation Dialog */}
+      <AlertDialog
+        open={isDeletePlayerDialogOpen}
+        onOpenChange={setIsDeletePlayerDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Player</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this player? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => setIsDeletePlayerDialogOpen(false)}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemovePlayer}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
