@@ -1,93 +1,29 @@
+// PointsCalculator.jsx
 "use client";
 
 import React, { useState, useEffect } from "react";
-import KeepScreenOnButton from "./KeepScreenOnButton"; 
-import ResetAndDeleteButton from './ResetAndDeleteButton'; 
+import KeepScreenOnButton from "./KeepScreenOnButton";
+import ResetAndDeleteButton from "./ResetAndDeleteButton";
+import PlayerCard from "./PlayerCard";
+import GameHistory from "./GameHistory";
+import ScoreInputDialog from "./ScoreInputDialog";
+import DeleteHistoryDialog from "./DeleteHistoryDialog";
+import DeletePlayerDialog from "./DeletePlayerDialog";
+import PlayerHistoryDialog from "./PlayerHistoryDialog"; // new
 
-import {
-  Plus,
-  Minus,
-  Users,
-  RotateCcw,
-  Save,
-  Edit2,
-  Clock,
-  Moon,
-  Sun,
-  Trophy,
-  Activity,
-  Trash2,
-  X,
-} from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Minus, Users, RotateCcw, Save, Moon, Sun } from "lucide-react";
+
+
 
 const GAME_PRESETS = {
-  uno: {
-    name: "UNO",
-    increment: 1,
-    players: 4,
-    description: "Classic card game scoring",
-    winCondition: "lowest",
-  },
-  yahtzee: {
-    name: "Yahtzee",
-    increment: 5,
-    players: 4,
-    description: "Dice game with multiples of 5",
-    winCondition: "highest",
-  },
-  scrabble: {
-    name: "Scrabble",
-    increment: 1,
-    players: 4,
-    description: "Word game with letter scores",
-    winCondition: "highest",
-  },
-  poker: {
-    name: "Poker",
-    increment: 5,
-    players: 6,
-    description: "Chip-based scoring",
-    winCondition: "highest",
-  },
-  hearts: {
-    name: "Hearts",
-    increment: 1,
-    players: 4,
-    description: "Heart cards = penalty points",
-    winCondition: "lowest",
-  },
-  monopoly: {
-    name: "Monopoly",
-    increment: 100,
-    players: 6,
-    description: "Property trading game",
-    winCondition: "highest",
-  },
-  rummy: {
-    name: "Rummy",
-    increment: 10,
-    players: 4,
-    description: "Card melding game",
-    winCondition: "lowest",
-  },
-  custom: {
-    name: "Custom Game",
-    increment: 1,
-    players: 2,
-    description: "Customize your own scoring",
-    winCondition: "highest",
-  },
+  uno: { name: "UNO", increment: 1, players: 4, description: "Classic card game scoring", winCondition: "lowest" },
+  yahtzee: { name: "Yahtzee", increment: 5, players: 4, description: "Dice game with multiples of 5", winCondition: "highest" },
+  scrabble: { name: "Scrabble", increment: 1, players: 4, description: "Word game with letter scores", winCondition: "highest" },
+  poker: { name: "Poker", increment: 5, players: 6, description: "Chip-based scoring", winCondition: "highest" },
+  hearts: { name: "Hearts", increment: 1, players: 4, description: "Heart cards = penalty points", winCondition: "lowest" },
+  monopoly: { name: "Monopoly", increment: 100, players: 6, description: "Property trading game", winCondition: "highest" },
+  rummy: { name: "Rummy", increment: 10, players: 4, description: "Card melding game", winCondition: "lowest" },
+  custom: { name: "Custom Game", increment: 1, players: 2, description: "Customize your own scoring", winCondition: "highest" },
 };
 
 const PointsCalculator = () => {
@@ -97,17 +33,13 @@ const PointsCalculator = () => {
   const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const [scoreInput, setScoreInput] = useState("");
-  const [isDeleteHistoryDialogOpen, setIsDeleteHistoryDialogOpen] =
-    useState(false);
-  const [isDeletePlayerDialogOpen, setIsDeletePlayerDialogOpen] =
-    useState(false);
+  const [isDeleteHistoryDialogOpen, setIsDeleteHistoryDialogOpen] = useState(false);
+  const [isDeletePlayerDialogOpen, setIsDeletePlayerDialogOpen] = useState(false);
   const [playerToDelete, setPlayerToDelete] = useState(null);
-
-  const resetAndDeleteAll = () => {
-    setPlayers([]);
-    setGameHistory([]);
-    localStorage.clear(); // Clear local storage or any other data you need to reset
-  };
+  
+  // New state for player history dialog
+  const [isPlayerHistoryDialogOpen, setIsPlayerHistoryDialogOpen] = useState(false);
+  const [selectedPlayerForHistory, setSelectedPlayerForHistory] = useState(null);
 
   const [players, setPlayers] = useState([
     {
@@ -116,6 +48,7 @@ const PointsCalculator = () => {
       points: 0,
       isEditing: false,
       stats: { wins: 0, gamesPlayed: 0, highScore: 0, avgScore: 0 },
+      scoreHistory: []
     },
     {
       id: 2,
@@ -123,12 +56,13 @@ const PointsCalculator = () => {
       points: 0,
       isEditing: false,
       stats: { wins: 0, gamesPlayed: 0, highScore: 0, avgScore: 0 },
+      scoreHistory: []
     },
   ]);
   const [gameHistory, setGameHistory] = useState([]);
 
+  // Load saved state from localStorage
   useEffect(() => {
-    // Load saved state from localStorage
     const savedDarkMode = localStorage.getItem("darkMode");
     if (savedDarkMode) setDarkMode(JSON.parse(savedDarkMode));
 
@@ -145,14 +79,20 @@ const PointsCalculator = () => {
     if (savedIncrement) setSelectedIncrement(parseInt(savedIncrement));
   }, []);
 
+  // Save state to localStorage
   useEffect(() => {
-    // Save state to localStorage
     localStorage.setItem("darkMode", JSON.stringify(darkMode));
     localStorage.setItem("gameType", gameType);
     localStorage.setItem("players", JSON.stringify(players));
     localStorage.setItem("gameHistory", JSON.stringify(gameHistory));
     localStorage.setItem("selectedIncrement", selectedIncrement.toString());
   }, [darkMode, gameType, players, gameHistory, selectedIncrement]);
+
+  const resetAndDeleteAll = () => {
+    setPlayers([]);
+    setGameHistory([]);
+    localStorage.clear();
+  };
 
   const handleAddPoints = (playerId, amount) => {
     setPlayers(
@@ -183,9 +123,7 @@ const PointsCalculator = () => {
   const toggleEditName = (playerId) => {
     setPlayers(
       players.map((player) =>
-        player.id === playerId
-          ? { ...player, isEditing: !player.isEditing }
-          : player
+        player.id === playerId ? { ...player, isEditing: !player.isEditing } : player
       )
     );
   };
@@ -220,6 +158,7 @@ const PointsCalculator = () => {
         points: 0,
         isEditing: false,
         stats: { wins: 0, gamesPlayed: 0, highScore: 0, avgScore: 0 },
+        scoreHistory: []
       },
     ]);
   };
@@ -232,9 +171,7 @@ const PointsCalculator = () => {
   const updatePlayerStats = () => {
     const preset = GAME_PRESETS[gameType];
     const sortedPlayers = [...players].sort((a, b) =>
-      preset.winCondition === "highest"
-        ? b.points - a.points
-        : a.points - b.points
+      preset.winCondition === "highest" ? b.points - a.points : a.points - b.points
     );
     const highestScore = sortedPlayers[0].points;
     const winners = sortedPlayers.filter((p) => p.points === highestScore);
@@ -292,21 +229,42 @@ const PointsCalculator = () => {
     const updatedGameHistory = [newGame, ...gameHistory];
     setGameHistory(updatedGameHistory);
     localStorage.setItem("gameHistory", JSON.stringify(updatedGameHistory));
+  };
 
-    //  alert("Game saved successfully! ✅");
+  // New: Save current score for a player
+  const savePlayerScore = (playerId) => {
+    setPlayers(
+      players.map((player) => {
+        if (player.id === playerId) {
+          const newEntry = {
+            score: player.points,
+            timestamp: new Date().toLocaleString(),
+          };
+          const updatedHistory = player.scoreHistory
+            ? [...player.scoreHistory, newEntry]
+            : [newEntry];
+          return { ...player, scoreHistory: updatedHistory };
+        }
+        return player;
+      })
+    );
+  };
+
+  // New: Open the player history dialog
+  const openPlayerHistory = (playerId) => {
+    const player = players.find((p) => p.id === playerId);
+    setSelectedPlayerForHistory(player);
+    setIsPlayerHistoryDialogOpen(true);
   };
 
   const incrementOptions = [1, 5, 10, 25, 50, 100];
 
   return (
-    <div
-      className={`max-w-2xl mx-auto p-4 space-y-4 ${darkMode ? "dark" : ""}`}
-    >
+    <div className={`max-w-2xl mx-auto p-4 space-y-4 ${darkMode ? "dark" : ""}`}>
+      {/* Game Controls */}
       <div className="flex justify-between items-center mb-6">
         <div className="space-y-2 flex-1">
-          <h1 className="text-2xl font-bold dark:text-white">
-            Points Calculator
-          </h1>
+          <h1 className="text-2xl font-bold dark:text-white">Points Calculator</h1>
           <select
             className="block w-full p-2 border rounded-md bg-white dark:bg-gray-800 dark:text-white"
             value={gameType}
@@ -342,6 +300,7 @@ const PointsCalculator = () => {
         </div>
       </div>
 
+      {/* Increment Options */}
       <div className="flex gap-2 overflow-x-auto py-2">
         {incrementOptions.map((inc) => (
           <button
@@ -358,86 +317,25 @@ const PointsCalculator = () => {
         ))}
       </div>
 
-                <KeepScreenOnButton />
+      <KeepScreenOnButton />
 
+      {/* Players List */}
       <div className="space-y-4">
         {players.map((player) => (
-          <Card key={player.id} className="w-full dark:bg-gray-800">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                {player.isEditing ? (
-                  <input
-                    type="text"
-                    value={player.name}
-                    onChange={(e) =>
-                      updatePlayerName(player.id, e.target.value)
-                    }
-                    onBlur={() => toggleEditName(player.id)}
-                    className="border rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
-                    autoFocus
-                  />
-                ) : (
-                  <div className="flex items-center justify-between w-full">
-                    <CardTitle className="text-lg flex items-center gap-2 dark:text-white">
-                      {player.name}
-                      <button
-                        onClick={() => toggleEditName(player.id)}
-                        className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                    </CardTitle>
-                    <button
-                      onClick={() => confirmRemovePlayer(player.id)}
-                      className="p-1 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between mb-4">
-                <button
-                  onClick={() => handleAddPoints(player.id, -1)}
-                  className="p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800"
-                >
-                  <Minus size={20} />
-                </button>
-
-                <button
-                  onClick={() => {
-                    setSelectedPlayerId(player.id);
-                    setIsScoreDialogOpen(true);
-                  }}
-                  className="text-3xl font-bold dark:text-white hover:opacity-75"
-                >
-                  {player.points}
-                </button>
-
-                <button
-                  onClick={() => handleAddPoints(player.id, 1)}
-                  className="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800"
-                >
-                  <Plus size={20} />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 text-sm dark:text-gray-300">
-                <div className="flex items-center gap-2">
-                  <Trophy size={16} />
-                  <span>Wins: {player.stats.wins}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Activity size={16} />
-                  <span>Games: {player.stats.gamesPlayed}</span>
-                </div>
-                <div>High Score: {player.stats.highScore}</div>
-                <div>Avg Score: {player.stats.avgScore}</div>
-              </div>
-            </CardContent>
-          </Card>
+          <PlayerCard
+            key={player.id}
+            player={player}
+            onToggleEditName={toggleEditName}
+            onUpdatePlayerName={updatePlayerName}
+            onConfirmRemovePlayer={confirmRemovePlayer}
+            onAddPoints={handleAddPoints}
+            onOpenScoreDialog={(playerId) => {
+              setSelectedPlayerId(playerId);
+              setIsScoreDialogOpen(true);
+            }}
+            onSavePlayerScore={savePlayerScore}       // new
+            onViewPlayerHistory={openPlayerHistory}     // new
+          />
         ))}
       </div>
 
@@ -451,148 +349,45 @@ const PointsCalculator = () => {
 
       <ResetAndDeleteButton onReset={resetAndDeleteAll} />
 
-      <Card className="dark:bg-gray-800">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2 dark:text-white">
-            <Clock size={20} />
-            Game History
-          </CardTitle>
-          {gameHistory.length > 0 && (
-            <button
-              onClick={() => setIsDeleteHistoryDialogOpen(true)}
-              className="p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
-            >
-              <Trash2 size={16} />
-            </button>
-          )}
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {gameHistory.map((game, index) => (
-              <div key={index} className="border-b dark:border-gray-700 pb-2">
-                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                  <span>{game.gameType}</span>
-                  <span>{game.timestamp}</span>
-                </div>
-                <div className="mt-1">
-                  {game.scores.map((score, idx) => (
-                    <div
-                      key={idx}
-                      className="flex justify-between text-sm dark:text-gray-300"
-                    >
-                      <span>{score.name}</span>
-                      <span className="font-medium">{score.score}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {gameHistory.length === 0 && (
-              <div className="text-center text-gray-500 dark:text-gray-400">
-                No game history yet
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <GameHistory
+        gameHistory={gameHistory}
+        onDeleteHistory={() => setIsDeleteHistoryDialogOpen(true)}
+      />
 
-      {/* Score Input Dialog */}
-      <AlertDialog open={isScoreDialogOpen} onOpenChange={setIsScoreDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Enter Points</AlertDialogTitle>
-            <AlertDialogDescription>
-              <input
-                type="number"
-                pattern="[0-9]*"
-                inputMode="numeric"
-                value={scoreInput}
-                onChange={(e) => setScoreInput(e.target.value)}
-                className="w-full p-2 border rounded-md mt-2"
-                placeholder="Enter points to add"
-                autoFocus
-              />
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={() => {
-                setScoreInput("");
-                setSelectedPlayerId(null);
-                setIsScoreDialogOpen(false);
-              }}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleScoreSubmit}>
-              Add Points
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Dialogs */}
+      <ScoreInputDialog
+        isOpen={isScoreDialogOpen}
+        onOpenChange={setIsScoreDialogOpen}
+        scoreInput={scoreInput}
+        onScoreInputChange={(e) => setScoreInput(e.target.value)}
+        onCancel={() => {
+          setScoreInput("");
+          setSelectedPlayerId(null);
+          setIsScoreDialogOpen(false);
+        }}
+        onSubmit={handleScoreSubmit}
+      />
 
-      {/* Clear History Confirmation Dialog */}
-      <AlertDialog
-        open={isDeleteHistoryDialogOpen}
+      <DeleteHistoryDialog
+        isOpen={isDeleteHistoryDialogOpen}
         onOpenChange={setIsDeleteHistoryDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Clear Game History</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to clear all game history? This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={() => {
-                setScoreInput("");
-                setSelectedPlayerId(null);
-                setIsDeleteHistoryDialogOpen(false); // Close the dialog
-              }}
-            >
-              Cancel
-            </AlertDialogCancel>
+        onCancel={() => setIsDeleteHistoryDialogOpen(false)}
+        onConfirm={clearGameHistory}
+      />
 
-            <AlertDialogAction
-              onClick={clearGameHistory}
-              className="bg-red-500 hover:bg-red-600"
-            >
-              Clear History
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Delete player Confirmation Dialog */}
-      <AlertDialog
-        open={isDeletePlayerDialogOpen}
+      <DeletePlayerDialog
+        isOpen={isDeletePlayerDialogOpen}
         onOpenChange={setIsDeletePlayerDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Player</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove this player? This action cannot be
-              undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={() => setIsDeletePlayerDialogOpen(false)}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleRemovePlayer}
-              className="bg-red-500 hover:bg-red-600"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onCancel={() => setIsDeletePlayerDialogOpen(false)}
+        onConfirm={handleRemovePlayer}
+      />
+
+      <PlayerHistoryDialog
+        isOpen={isPlayerHistoryDialogOpen}
+        onOpenChange={setIsPlayerHistoryDialogOpen}
+        player={selectedPlayerForHistory}
+        onClose={() => setIsPlayerHistoryDialogOpen(false)}
+      />
     </div>
   );
 };
